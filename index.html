@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#137a45" />
+  <title>Controle de Verduras</title>
+  <meta name="description" content="Controle diário de quantidades de verduras por caixa, ml ou unidade." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CONTROLE DIÁRIO</p>
+        <h1>Verduras</h1>
+      </div>
+      <button class="icon-btn" id="openSettingsBtn" type="button" aria-label="Gerenciar verduras">⚙️</button>
+    </header>
+
+    <main>
+      <section id="startView" class="panel hero-panel">
+        <div class="hero-icon" aria-hidden="true">🥬</div>
+        <h2>Começar o controle de hoje</h2>
+        <p>Abra a sessão, toque nas verduras e registre a quantidade em poucos segundos.</p>
+        <label class="field-label" for="sessionDate">Data da sessão</label>
+        <input class="input" id="sessionDate" type="date" />
+        <button class="btn btn-primary btn-large" id="startSessionBtn" type="button">Iniciar sessão</button>
+        <button class="btn btn-ghost" id="openHistoryBtn" type="button">Ver histórico</button>
+      </section>
+
+      <section id="sessionView" class="hidden">
+        <div class="session-strip">
+          <div>
+            <span class="status-dot"></span>
+            <strong>Sessão aberta</strong>
+            <span id="activeDateLabel"></span>
+          </div>
+          <button class="text-btn" id="cancelSessionBtn" type="button">Cancelar</button>
+        </div>
+
+        <section class="section-block">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">1. ESCOLHA</p>
+              <h2>Qual verdura?</h2>
+            </div>
+            <button class="small-btn" id="quickAddVegetableBtn" type="button">+ Nova</button>
+          </div>
+          <div id="vegetableGrid" class="vegetable-grid"></div>
+        </section>
+
+        <section class="section-block order-section">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">2. CONFIRA</p>
+              <h2>Lista do dia</h2>
+            </div>
+            <span id="itemCountBadge" class="count-badge">0 itens</span>
+          </div>
+          <div id="emptyOrder" class="empty-state">
+            <span>🧺</span>
+            <p>Nenhuma verdura adicionada ainda.</p>
+          </div>
+          <div id="orderList" class="order-list"></div>
+        </section>
+
+        <div class="sticky-actions">
+          <button class="btn btn-primary btn-large" id="finishSessionBtn" type="button" disabled>Finalizar e gerar lista</button>
+        </div>
+      </section>
+
+      <section id="resultView" class="hidden">
+        <div class="panel result-panel">
+          <div class="success-mark">✓</div>
+          <p class="eyebrow">SESSÃO FINALIZADA</p>
+          <h2>Lista pronta</h2>
+          <p class="muted">Copie e envie onde precisar.</p>
+          <textarea id="resultText" class="result-text" readonly></textarea>
+          <button class="btn btn-primary btn-large" id="copyResultBtn" type="button">📋 Copiar lista</button>
+          <button class="btn btn-secondary" id="newSessionBtn" type="button">Nova sessão</button>
+          <button class="btn btn-ghost" id="resultHistoryBtn" type="button">Ver histórico</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="quantityModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="quantityTitle">
+    <div class="modal-card bottom-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">ADICIONAR</p>
+          <h2 id="quantityTitle">Verdura</h2>
+        </div>
+        <button class="icon-btn close-modal" type="button" aria-label="Fechar">✕</button>
+      </div>
+
+      <p class="field-label">Tipo de medida</p>
+      <div class="segmented" id="unitSelector">
+        <button type="button" data-unit="Caixa" class="segment active">📦 Caixa</button>
+        <button type="button" data-unit="ML" class="segment">🥤 ML</button>
+        <button type="button" data-unit="Unidade" class="segment">🥬 Unidade</button>
+      </div>
+
+      <p class="field-label quantity-label">Quantidade</p>
+      <div class="quantity-control">
+        <button id="minusQtyBtn" class="qty-btn" type="button">−</button>
+        <div class="qty-display">
+          <input id="quantityInput" inputmode="decimal" type="number" min="0" step="1" value="1" />
+          <span id="qtyUnitLabel">caixa</span>
+        </div>
+        <button id="plusQtyBtn" class="qty-btn" type="button">+</button>
+      </div>
+
+      <div id="quickQtyButtons" class="quick-qty"></div>
+      <button class="btn btn-primary btn-large" id="addToOrderBtn" type="button">Adicionar à lista</button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">CADASTRO</p>
+          <h2 id="settingsTitle">Gerenciar verduras</h2>
+        </div>
+        <button class="icon-btn close-settings" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <form id="vegetableForm" class="add-form">
+        <input class="input" id="newVegetableName" type="text" maxlength="40" placeholder="Ex.: Coentro" autocomplete="off" required />
+        <button class="btn btn-primary" type="submit">Cadastrar</button>
+      </form>
+      <div id="settingsVegetableList" class="settings-list"></div>
+      <p class="helper-text">As verduras cadastradas ficam salvas neste aparelho/navegador.</p>
+    </div>
+  </div>
+
+  <div id="historyModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">REGISTROS</p>
+          <h2 id="historyTitle">Histórico</h2>
+        </div>
+        <button class="icon-btn close-history" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
